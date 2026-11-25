@@ -7,6 +7,11 @@ export default defineConfig([
 	},
 	...obsidianmd.configs.recommended,
 	{
+		rules: {
+			"obsidianmd/ui/sentence-case": ["warn", {
+				acronyms: ["ELK"],
+			}],
+		},
 		languageOptions: {
 			parserOptions: {
 				projectService: true,

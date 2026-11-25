@@ -1,0 +1,8 @@
+.rockuml-elk-preview {
+	width: min(90vw, 90rem);
+	height: 85vh;
+}
+
+.rockuml-elk-preview .modal-content {
+	overflow: auto;
+}

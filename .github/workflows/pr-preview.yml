@@ -62,7 +62,7 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
         run: |
           gh release create "$VERSION" \
-            main.js manifest.json \
+            main.js manifest.json styles.css \
             --target "${{ github.event.pull_request.head.sha }}" \
             --title "$VERSION" \
             --prerelease \

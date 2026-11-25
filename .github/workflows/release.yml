@@ -30,13 +30,14 @@ jobs:
         with:
           subject-path: |
             main.js
+            styles.css
 
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ github.ref_name }}" \
-            main.js manifest.json \
+            main.js manifest.json styles.css \
             --title "${{ github.ref_name }}" \
             --generate-notes \
             --prerelease=${{ contains(github.ref_name, '-alpha') || contains(github.ref_name, '-beta') }}
