@@ -32,12 +32,13 @@ export async function rasterizePng(image: HTMLImageElement, size: Size): Promise
 		const stride = width * 4 + 1;
 		let top = 0;
 		const scanlines = new ReadableStream<Uint8Array<ArrayBuffer>>({
-			pull(controller) {
+			async pull(controller) {
 				if (top >= height) {
 					controller.close();
 					return;
 				}
 
+				await new Promise<void>(resolve => window.setTimeout(resolve, 0));
 				const rows = Math.min(stripHeight, height - top);
 				const strip = new Uint8Array(stride * rows);
 				canvas.height = rows;

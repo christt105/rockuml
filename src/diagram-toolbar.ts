@@ -44,8 +44,15 @@ export function diagramToolbar(
 			menu.addItem(item => item.setTitle(`Export PNG at ${scale}×`).onClick(() => {
 				run(async ({ source, noteName, number }) => {
 					const doc = element.ownerDocument;
-					const blob = await pngBlob(source, scale, doc.body);
-					downloadBlob(blob, pngExportFileName(noteName, number, scale), doc);
+					const progress = new Notice("Preparing PNG…", 0);
+					control.disabled = true;
+					try {
+						const blob = await pngBlob(source, scale, doc.body);
+						downloadBlob(blob, pngExportFileName(noteName, number, scale), doc);
+					} finally {
+						progress.hide();
+						control.disabled = false;
+					}
 				});
 			}));
 		}
