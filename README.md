@@ -1,12 +1,25 @@
 # RockUML
 
-RockUML is an Obsidian plugin in development for viewing, navigating, and exporting Mermaid and PlantUML diagrams. The planned viewer includes a full-width tab with pan and zoom and SVG and PNG export.
+RockUML is an Obsidian plugin in development for viewing, navigating, and exporting Mermaid and PlantUML diagrams. The Mermaid viewer uses Obsidian’s built-in renderer.
 
 ## Install with BRAT
 
 1. Install and enable BRAT from Obsidian's Community plugins.
 2. Open BRAT's settings and add `christt105/rockuml` as a beta plugin. For a pull request build, use **Add beta plugin with frozen version** and enter the preview version from the pull request.
 3. Enable RockUML in Community plugins.
+
+## View and export Mermaid
+
+Hover over a rendered Mermaid block or tab to its toolbar. On touch devices the toolbar is always visible. Use it to open the diagram in a full-width tab, download SVG or PNG, or copy the Mermaid source. The same controls are available in note embeds.
+
+In the viewer, drag to pan and scroll to zoom around the pointer. The controls fit the diagram to the window, return it to actual size, or zoom in and out. PNG exports are available at 2×, 4×, and 8×. They use SVG text, so HTML formatting in labels can look different from the note.
+
+To opt a note out of **Readable line length**, add this frontmatter property.
+
+```yaml
+cssclasses:
+  - rockuml-wide
+```
 
 ## Development
 

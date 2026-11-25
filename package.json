@@ -21,6 +21,7 @@
 	"author": "christt105",
 	"license": "MIT",
 	"devDependencies": {
+		"@codemirror/view": "6.43.13",
 		"@types/node": "^22.20.5",
 		"esbuild": "^0.28.2",
 		"eslint": "^9.39.5",
