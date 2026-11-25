@@ -32,7 +32,7 @@ export default class RockUmlPlugin extends Plugin {
 			}
 
 			mermaid.registerLayoutLoaders(elkLayouts);
-			const id = `rockuml-elk-${crypto.randomUUID()}`;
+			const id = `rockuml-elk-${crypto.getRandomValues(new Uint32Array(2)).join("-")}`;
 			const { svg } = await mermaid.render(id, source + '\n%%{init: {"layout":"elk"}}%%');
 			new ElkPreviewModal(this.app, svg).open();
 		} catch (error) {
