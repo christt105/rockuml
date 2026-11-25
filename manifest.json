@@ -1,0 +1,10 @@
+{
+	"id": "rockuml",
+	"name": "RockUML",
+	"version": "0.0.0",
+	"minAppVersion": "1.13.0",
+	"description": "View, navigate and export Mermaid and PlantUML diagrams.",
+	"author": "christt105",
+	"authorUrl": "https://github.com/christt105",
+	"isDesktopOnly": false
+}
