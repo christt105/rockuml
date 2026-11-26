@@ -1,4 +1,4 @@
-.mermaid:has(> .rockuml-toolbar) {
+:is(.mermaid, .rockuml-plantuml):has(> .rockuml-toolbar) {
 	position: relative;
 }
 
@@ -21,8 +21,8 @@
 	border-radius: var(--radius-m);
 }
 
-.mermaid:hover > .rockuml-toolbar,
-.mermaid:focus-within > .rockuml-toolbar {
+:is(.mermaid, .rockuml-plantuml):hover > .rockuml-toolbar,
+:is(.mermaid, .rockuml-plantuml):focus-within > .rockuml-toolbar {
 	opacity: 1;
 	pointer-events: auto;
 }
@@ -92,4 +92,10 @@
 
 .markdown-source-view.mod-cm6 .cm-lang-mermaid > .mermaid > .rockuml-toolbar {
 	inset-inline-end: var(--size-4-8);
+}
+
+.rockuml-plantuml > svg {
+	display: block;
+	max-width: 100%;
+	height: auto;
 }

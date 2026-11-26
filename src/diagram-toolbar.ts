@@ -1,11 +1,12 @@
 import { Menu, Notice, setIcon } from "obsidian";
 import { createControlGroup } from "./control-group";
 import { downloadBlob, pngBlob, svgBlob } from "./diagram-export";
-import type { Diagram } from "./diagram";
+import type { Diagram, DiagramLanguage } from "./diagram";
 import { exportBackgroundColor } from "./export-background";
 import { pngExportFileName, svgExportFileName } from "./export-file-name";
 import { mermaidExportSource } from "./mermaid-export-source";
 import { renderMermaid } from "./mermaid-render";
+import { plantUmlExportSvg } from "./plantuml-svg";
 import { pngScales } from "./png-scale";
 import type { RockUmlSettings } from "./settings/rockuml-settings";
 
@@ -14,9 +15,11 @@ export function diagramToolbar(
 	getDiagram: () => Diagram | Promise<Diagram>,
 	open: (diagram: Diagram) => Promise<void>,
 	getSettings: () => RockUmlSettings,
+	language: DiagramLanguage = "mermaid",
 ): HTMLElement {
 	element.querySelector(":scope > .rockuml-toolbar")?.remove();
-	const toolbar = createControlGroup(element, "rockuml-toolbar", "Mermaid diagram");
+	const label = language === "mermaid" ? "Mermaid" : "PlantUML";
+	const toolbar = createControlGroup(element, "rockuml-toolbar", `${label} diagram`);
 	const doc = element.ownerDocument;
 
 	const backgroundColor = (settings: RockUmlSettings) => {
@@ -37,6 +40,15 @@ export function diagramToolbar(
 		}
 		return svg;
 	};
+	const exportSvg = async (source: string, settings: RockUmlSettings, format: "svg" | "png") => {
+		if (language === "plantuml") {
+			return plantUmlExportSvg(getSvg());
+		}
+		if (format === "svg" && settings.exportTheme === "note") {
+			return getSvg();
+		}
+		return renderMermaid(mermaidExportSource(source, settings.exportTheme, format), doc.body);
+	};
 	const button = (label: string, icon: string, action: (control: HTMLButtonElement) => void) => {
 		const control = toolbar.createEl("button", { attr: { type: "button", "aria-label": label, title: label } });
 		setIcon(control, icon);
@@ -51,8 +63,7 @@ export function diagramToolbar(
 		const settings = getSettings();
 		const background = backgroundColor(settings);
 		const noteSvg = getSvg();
-		const svg = settings.exportTheme === "note" ? noteSvg
-			: await renderMermaid(mermaidExportSource(source, settings.exportTheme, "svg"), doc.body);
+		const svg = await exportSvg(source, settings, "svg");
 		downloadBlob(svgBlob(svg, noteSvg, background), svgExportFileName(noteName, number), doc);
 	}));
 	button("Export PNG", "image", control => {
@@ -65,7 +76,8 @@ export function diagramToolbar(
 					const progress = new Notice("Preparing PNG…", 0);
 					control.disabled = true;
 					try {
-						const blob = await pngBlob(source, scale, doc.body, settings.exportTheme, backgroundColor(settings));
+						const svg = await exportSvg(source, settings, "png");
+						const blob = await pngBlob(svg, scale, doc.body, backgroundColor(settings));
 						downloadBlob(blob, pngExportFileName(noteName, number, scale), doc);
 					} finally {
 						progress.hide();
@@ -78,7 +90,7 @@ export function diagramToolbar(
 	});
 	button("Copy source", "copy", () => run(async ({ source }) => {
 		await element.win.navigator.clipboard.writeText(source);
-		new Notice("Mermaid source copied.");
+		new Notice(`${label} source copied.`);
 	}));
 	return toolbar;
 }

@@ -2,7 +2,7 @@ import { type EditorView } from "@codemirror/view";
 import { editorInfoField } from "obsidian";
 import type { Diagram } from "./diagram";
 import { diagramToolbar } from "./diagram-toolbar";
-import { mermaidBlocks } from "./mermaid-blocks";
+import { diagramBlocks } from "./diagram-blocks";
 import type { RockUmlSettings } from "./settings/rockuml-settings";
 
 export class LiveMermaid {
@@ -46,10 +46,10 @@ export class LiveMermaid {
 		const { state } = this.editor;
 		const file = state.field(editorInfoField, false)?.file;
 		const line = state.doc.lineAt(this.editor.posAtDOM(widget)).number - 1;
-		const block = mermaidBlocks(state.doc.toString()).find(block => line >= block.start && line <= block.end);
+		const block = diagramBlocks(state.doc.toString(), "mermaid").find(block => line >= block.start && line <= block.end);
 		if (!block) {
 			throw new Error("The Mermaid source could not be found in this editor.");
 		}
-		return { source: block.source, number: block.number, noteName: file?.basename ?? "diagram" };
+		return { language: "mermaid", source: block.source, number: block.number, noteName: file?.basename ?? "diagram" };
 	}
 }

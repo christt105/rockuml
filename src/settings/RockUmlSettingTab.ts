@@ -27,6 +27,17 @@ export class RockUmlSettingTab extends PluginSettingTab {
 					},
 				],
 			},
+			{
+				type: "group",
+				heading: "PlantUML",
+				items: [
+					{
+						name: "PlantUML server URL",
+						desc: "HTTP or HTTPS base URL. RockUML sends diagram source to this server. Reopen the note or viewer after changing it.",
+						control: { type: "text", key: "plantUmlServerUrl", placeholder: "http://localhost:8080/plantuml" },
+					},
+				],
+			},
 		];
 	}
 }

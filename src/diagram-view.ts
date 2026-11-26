@@ -2,15 +2,15 @@ import { ItemView, setIcon, type ViewStateResult, type WorkspaceLeaf } from "obs
 import { createControlGroup } from "./control-group";
 import type { Diagram } from "./diagram";
 import { diagramFromState } from "./diagram-view-state";
-import { renderMermaid, svgSize } from "./mermaid-render";
+import { svgSize } from "./svg-size";
 import { boundedScale, fitDiagram, pan, zoomAt } from "./pan-zoom";
 import type { Point } from "./point";
 import type { Size } from "./size";
 import type { Transform } from "./transform";
 
-export const mermaidViewType = "rockuml-mermaid";
+export const diagramViewType = "rockuml-mermaid";
 
-export class MermaidView extends ItemView {
+export class DiagramView extends ItemView {
 	private viewport!: HTMLElement;
 	private stage!: HTMLElement;
 	private status!: HTMLElement;
@@ -20,16 +20,19 @@ export class MermaidView extends ItemView {
 	private fitting = true;
 	private drag?: { pointerId: number; point: Point };
 
-	constructor(leaf: WorkspaceLeaf) {
+	constructor(
+		leaf: WorkspaceLeaf,
+		private readonly render: (diagram: Diagram, host: HTMLElement) => Promise<{ svg: SVGSVGElement; syntaxError?: boolean }>,
+	) {
 		super(leaf);
 	}
 
 	override getViewType(): string {
-		return mermaidViewType;
+		return diagramViewType;
 	}
 
 	override getDisplayText(): string {
-		return "Mermaid viewer";
+		return "Diagram viewer";
 	}
 
 	override getIcon(): string {
@@ -50,8 +53,8 @@ export class MermaidView extends ItemView {
 		button("Zoom in", "plus", () => this.zoom(this.center(), this.transform.scale * 1.25));
 
 		this.viewport = this.contentEl.createDiv("rockuml-viewport");
-		this.stage = this.viewport.createDiv("rockuml-stage mermaid");
-		this.status = this.viewport.createDiv({ cls: "rockuml-view-status", text: "Open a Mermaid diagram from a note.", attr: { role: "status" } });
+		this.stage = this.viewport.createDiv("rockuml-stage");
+		this.status = this.viewport.createDiv({ cls: "rockuml-view-status", text: "Open a diagram from a note.", attr: { role: "status" } });
 
 		this.registerDomEvent(this.viewport, "wheel", event => {
 			if (!this.size) {
@@ -105,25 +108,29 @@ export class MermaidView extends ItemView {
 		this.fitting = true;
 		this.stage.replaceChildren();
 		this.status.hidden = false;
-		this.status.setText(diagram ? "Rendering diagram…" : "Open a Mermaid diagram from a note.");
+		this.status.setText(diagram ? "Rendering diagram…" : "Open a diagram from a note.");
 		await super.setState(state, result);
 		if (!diagram || this.diagram !== diagram) {
 			return;
 		}
 		try {
-			const svg = await renderMermaid(diagram.source, this.contentEl);
+			const { svg, syntaxError } = await this.render(diagram, this.contentEl);
 			if (this.diagram !== diagram) {
 				return;
 			}
+			this.stage.toggleClass("mermaid", diagram.language === "mermaid");
 			this.size = svgSize(svg);
 			this.stage.style.width = `${this.size.width}px`;
 			this.stage.style.height = `${this.size.height}px`;
 			this.stage.replaceChildren(svg);
-			this.status.hidden = true;
+			this.status.hidden = !syntaxError;
+			if (syntaxError) {
+				this.status.setText("The diagram contains a syntax error.");
+			}
 			this.fit();
 		} catch (error) {
 			if (this.diagram === diagram) {
-				this.status.setText(error instanceof Error ? error.message : "Mermaid could not render this diagram.");
+				this.status.setText(error instanceof Error ? error.message : "RockUML could not render this diagram.");
 			}
 		}
 	}
