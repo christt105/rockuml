@@ -1,5 +1,7 @@
-import { ItemView, setIcon, type WorkspaceLeaf } from "obsidian";
+import { ItemView, setIcon, type ViewStateResult, type WorkspaceLeaf } from "obsidian";
+import { createControlGroup } from "./control-group";
 import type { Diagram } from "./diagram";
+import { diagramFromState } from "./diagram-view-state";
 import { renderMermaid, svgSize } from "./mermaid-render";
 import { boundedScale, fitDiagram, pan, zoomAt } from "./pan-zoom";
 import type { Point } from "./point";
@@ -12,6 +14,7 @@ export class MermaidView extends ItemView {
 	private viewport!: HTMLElement;
 	private stage!: HTMLElement;
 	private status!: HTMLElement;
+	private diagram?: Diagram;
 	private size?: Size;
 	private transform: Transform = { x: 0, y: 0, scale: 1 };
 	private fitting = true;
@@ -35,7 +38,7 @@ export class MermaidView extends ItemView {
 
 	protected override onOpen(): Promise<void> {
 		this.contentEl.addClass("rockuml-view");
-		const controls = this.contentEl.createDiv({ cls: "rockuml-view-controls", attr: { role: "group", "aria-label": "Diagram zoom" } });
+		const controls = createControlGroup(this.contentEl, "rockuml-view-controls", "Diagram zoom");
 		const button = (label: string, icon: string, action: () => void) => {
 			const control = controls.createEl("button", { attr: { type: "button", title: label, "aria-label": label } });
 			setIcon(control, icon);
@@ -91,10 +94,27 @@ export class MermaidView extends ItemView {
 		}
 	}
 
-	async show(diagram: Diagram): Promise<void> {
-		this.status.setText("Rendering diagram…");
+	override getState(): Record<string, unknown> {
+		return this.diagram ? { diagram: this.diagram } : {};
+	}
+
+	override async setState(state: unknown, result: ViewStateResult): Promise<void> {
+		const diagram = diagramFromState(state);
+		this.diagram = diagram;
+		this.size = undefined;
+		this.fitting = true;
+		this.stage.replaceChildren();
+		this.status.hidden = false;
+		this.status.setText(diagram ? "Rendering diagram…" : "Open a Mermaid diagram from a note.");
+		await super.setState(state, result);
+		if (!diagram || this.diagram !== diagram) {
+			return;
+		}
 		try {
 			const svg = await renderMermaid(diagram.source, this.contentEl);
+			if (this.diagram !== diagram) {
+				return;
+			}
 			this.size = svgSize(svg);
 			this.stage.style.width = `${this.size.width}px`;
 			this.stage.style.height = `${this.size.height}px`;
@@ -102,7 +122,9 @@ export class MermaidView extends ItemView {
 			this.status.hidden = true;
 			this.fit();
 		} catch (error) {
-			this.status.setText(error instanceof Error ? error.message : "Mermaid could not render this diagram.");
+			if (this.diagram === diagram) {
+				this.status.setText(error instanceof Error ? error.message : "Mermaid could not render this diagram.");
+			}
 		}
 	}
 

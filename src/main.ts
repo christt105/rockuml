@@ -11,11 +11,8 @@ export default class RockUmlPlugin extends Plugin {
 		const sections = new Map<HTMLElement, ReadingMermaid>();
 		const open = async (diagram: Diagram) => {
 			const leaf = this.app.workspace.getLeaf("tab");
-			await leaf.setViewState({ type: mermaidViewType, active: true });
+			await leaf.setViewState({ type: mermaidViewType, state: { diagram }, active: true });
 			await this.app.workspace.revealLeaf(leaf);
-			if (leaf.view instanceof MermaidView) {
-				await leaf.view.show(diagram);
-			}
 		};
 
 		this.registerView(mermaidViewType, leaf => new MermaidView(leaf));
@@ -32,7 +29,6 @@ export default class RockUmlPlugin extends Plugin {
 			for (const section of sections.values()) {
 				section.unload();
 			}
-			this.app.workspace.detachLeavesOfType(mermaidViewType);
 		});
 	}
 }

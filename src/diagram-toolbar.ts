@@ -1,4 +1,5 @@
 import { Menu, Notice, setIcon } from "obsidian";
+import { createControlGroup } from "./control-group";
 import { downloadBlob, pngBlob, svgBlob } from "./diagram-export";
 import type { Diagram } from "./diagram";
 import { pngExportFileName, svgExportFileName } from "./export-file-name";
@@ -10,7 +11,7 @@ export function diagramToolbar(
 	open: (diagram: Diagram) => Promise<void>,
 ): HTMLElement {
 	element.querySelector(":scope > .rockuml-toolbar")?.remove();
-	const toolbar = element.createDiv({ cls: "rockuml-toolbar", attr: { role: "group", "aria-label": "Mermaid diagram" } });
+	const toolbar = createControlGroup(element, "rockuml-toolbar", "Mermaid diagram");
 
 	const run = (action: (diagram: Diagram) => void | Promise<void>) => {
 		void Promise.resolve().then(getDiagram).then(action).catch((error: unknown) => {
