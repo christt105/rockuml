@@ -1,19 +1,26 @@
 import { renderMermaid, svgSize } from "./mermaid-render";
 import { pngSize, type PngScale } from "./png-scale";
 import { rasterizePng } from "./png-raster";
-import { pngSource } from "./png-source";
+import { mermaidExportSource } from "./mermaid-export-source";
+import type { ExportTheme } from "./settings/rockuml-settings";
 
-export function svgBlob(svg: SVGSVGElement, fontSource: Element = svg): Blob {
+export function svgBlob(svg: SVGSVGElement, fontSource: Element, background?: string): Blob {
 	const copy = svg.cloneNode(true) as SVGSVGElement;
 	const font = fontSource.ownerDocument.defaultView?.getComputedStyle(fontSource).getPropertyValue("--font-mermaid").trim();
 	if (font) {
 		copy.style.setProperty("--font-mermaid", font);
 	}
+	if (background) {
+		const { x, y, width, height } = svg.viewBox.baseVal;
+		const rect = copy.createSvg("rect", { attr: { x, y, width, height } });
+		rect.setCssProps({ fill: background, stroke: "none" });
+		copy.prepend(rect);
+	}
 	return new Blob([new XMLSerializer().serializeToString(copy)], { type: "image/svg+xml;charset=utf-8" });
 }
 
-export async function pngBlob(source: string, scale: PngScale, host: HTMLElement): Promise<Blob> {
-	const svg = await renderMermaid(pngSource(source), host);
+export async function pngBlob(source: string, scale: PngScale, host: HTMLElement, theme: ExportTheme, background?: string): Promise<Blob> {
+	const svg = await renderMermaid(mermaidExportSource(source, theme, "png"), host);
 	if (svg.querySelector("foreignObject")) {
 		throw new Error("Mermaid could not convert all labels to SVG text for PNG export.");
 	}
@@ -27,7 +34,7 @@ export async function pngBlob(source: string, scale: PngScale, host: HTMLElement
 		const image = createEl("img");
 		image.src = url;
 		await image.decode();
-		return await rasterizePng(image, size);
+		return await rasterizePng(image, size, background);
 	} finally {
 		URL.revokeObjectURL(url);
 	}

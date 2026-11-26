@@ -4,9 +4,16 @@ import type { Diagram } from "./diagram";
 import { LiveMermaid } from "./live-mermaid";
 import { MermaidView, mermaidViewType } from "./mermaid-view";
 import { ReadingMermaid } from "./reading-mermaid";
+import { RockUmlSettingTab } from "./settings/RockUmlSettingTab";
+import { loadSettings } from "./settings/rockuml-settings";
 
 export default class RockUmlPlugin extends Plugin {
-	override onload(): void {
+	override settings = loadSettings(undefined);
+
+	override async onload(): Promise<void> {
+		this.settings = loadSettings(await this.loadData());
+		this.addSettingTab(new RockUmlSettingTab(this.app, this));
+		const getSettings = () => this.settings;
 		const sources = new WeakMap<Node, string>();
 		const sections = new Map<HTMLElement, ReadingMermaid>();
 		const open = async (diagram: Diagram) => {
@@ -16,10 +23,10 @@ export default class RockUmlPlugin extends Plugin {
 		};
 
 		this.registerView(mermaidViewType, leaf => new MermaidView(leaf));
-		this.registerEditorExtension(ViewPlugin.define(editor => new LiveMermaid(editor, open)));
+		this.registerEditorExtension(ViewPlugin.define(editor => new LiveMermaid(editor, open, getSettings)));
 		this.registerMarkdownPostProcessor((element, context) => {
 			if (!sections.has(element) && ReadingMermaid.hasDiagram(element)) {
-				const reading = new ReadingMermaid(element, context, this.app, sources, open);
+				const reading = new ReadingMermaid(element, context, this.app, sources, open, getSettings);
 				sections.set(element, reading);
 				reading.register(() => sections.delete(element));
 				context.addChild(reading);

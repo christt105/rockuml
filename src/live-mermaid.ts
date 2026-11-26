@@ -3,6 +3,7 @@ import { editorInfoField } from "obsidian";
 import type { Diagram } from "./diagram";
 import { diagramToolbar } from "./diagram-toolbar";
 import { mermaidBlocks } from "./mermaid-blocks";
+import type { RockUmlSettings } from "./settings/rockuml-settings";
 
 export class LiveMermaid {
 	private readonly toolbars = new Map<HTMLElement, HTMLElement>();
@@ -11,6 +12,7 @@ export class LiveMermaid {
 	constructor(
 		private readonly editor: EditorView,
 		private readonly open: (diagram: Diagram) => Promise<void>,
+		private readonly getSettings: () => RockUmlSettings,
 	) {
 		this.observer.observe(editor.contentDOM, { childList: true, subtree: true });
 		this.refresh();
@@ -34,7 +36,7 @@ export class LiveMermaid {
 		for (const widget of Array.from(this.editor.contentDOM.querySelectorAll<HTMLElement>(".cm-embed-block.cm-lang-mermaid"))) {
 			const element = widget.querySelector<HTMLElement>(":scope > .mermaid");
 			if (element?.querySelector(":scope > svg") && !this.toolbars.has(element)) {
-				const toolbar = diagramToolbar(element, () => this.getDiagram(widget), this.open);
+				const toolbar = diagramToolbar(element, () => this.getDiagram(widget), this.open, this.getSettings);
 				this.toolbars.set(element, toolbar);
 			}
 		}
