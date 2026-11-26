@@ -2,6 +2,7 @@ import { type App, MarkdownRenderChild, type MarkdownPostProcessorContext, parse
 import type { Diagram } from "./diagram";
 import { diagramToolbar } from "./diagram-toolbar";
 import { mermaidBlocks } from "./mermaid-blocks";
+import type { RockUmlSettings } from "./settings/rockuml-settings";
 
 const renderedSelector = ".mermaid";
 const sourceSelector = "pre > code.language-mermaid";
@@ -29,6 +30,7 @@ export class ReadingMermaid extends MarkdownRenderChild {
 		private readonly app: App,
 		private readonly sources: WeakMap<Node, string>,
 		private readonly open: (diagram: Diagram) => Promise<void>,
+		private readonly getSettings: () => RockUmlSettings,
 	) {
 		super(element);
 	}
@@ -68,7 +70,7 @@ export class ReadingMermaid extends MarkdownRenderChild {
 		}
 		for (const element of diagrams) {
 			if (!this.toolbars.has(element)) {
-				this.toolbars.set(element, diagramToolbar(element, () => this.getDiagram(element), this.open));
+				this.toolbars.set(element, diagramToolbar(element, () => this.getDiagram(element), this.open, this.getSettings));
 			}
 		}
 	}

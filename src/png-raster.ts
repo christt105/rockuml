@@ -4,7 +4,7 @@ import type { Size } from "./size";
 const tileWidth = 4096;
 const stripHeight = 128;
 
-export async function rasterizePng(image: HTMLImageElement, size: Size): Promise<Blob> {
+export async function rasterizePng(image: HTMLImageElement, size: Size, background?: string): Promise<Blob> {
 	const { width, height } = size;
 	const canvas = createEl("canvas");
 	const tiled = width > tileWidth || height > tileWidth;
@@ -12,12 +12,19 @@ export async function rasterizePng(image: HTMLImageElement, size: Size): Promise
 	if (!context) {
 		throw new Error("The device could not create a canvas for this PNG.");
 	}
+	const draw = (left: number, top: number) => {
+		if (background) {
+			context.fillStyle = background;
+			context.fillRect(0, 0, canvas.width, canvas.height);
+		}
+		context.drawImage(image, -left, -top);
+	};
 
 	try {
 		if (!tiled) {
 			canvas.width = width;
 			canvas.height = height;
-			context.drawImage(image, 0, 0);
+			draw(0, 0);
 			return await new Promise<Blob>((resolve, reject) => {
 				canvas.toBlob(blob => {
 					if (blob) {
@@ -46,7 +53,7 @@ export async function rasterizePng(image: HTMLImageElement, size: Size): Promise
 				for (let left = 0; left < width; left += tileWidth) {
 					const columns = Math.min(tileWidth, width - left);
 					canvas.width = columns;
-					context.drawImage(image, -left, -top);
+				draw(left, top);
 					const { data } = context.getImageData(0, 0, columns, rows);
 					const rowBytes = columns * 4;
 					for (let row = 0; row < rows; row++) {
