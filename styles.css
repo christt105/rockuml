@@ -1,0 +1,95 @@
+.mermaid:has(> .rockuml-toolbar) {
+	position: relative;
+}
+
+.rockuml-toolbar,
+.rockuml-view-controls {
+	display: flex;
+	gap: var(--size-2-2);
+	padding: var(--size-2-2);
+}
+
+.rockuml-toolbar {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline-end: 0;
+	z-index: 1;
+	opacity: 0;
+	pointer-events: none;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+}
+
+.mermaid:hover > .rockuml-toolbar,
+.mermaid:focus-within > .rockuml-toolbar {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+@media (hover: none) {
+	.rockuml-toolbar {
+		opacity: 1;
+		pointer-events: auto;
+	}
+}
+
+.rockuml-view {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 0;
+	overflow: hidden;
+}
+
+.rockuml-view-controls {
+	justify-content: flex-end;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.rockuml-viewport {
+	position: relative;
+	flex: 1;
+	overflow: hidden;
+	touch-action: none;
+	user-select: none;
+	cursor: grab;
+}
+
+.rockuml-viewport.is-dragging {
+	cursor: grabbing;
+}
+
+.rockuml-stage {
+	position: absolute;
+	transform-origin: 0 0;
+	will-change: transform;
+	pointer-events: none;
+}
+
+.rockuml-stage > svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+	max-width: none !important;
+}
+
+.rockuml-view-status {
+	margin: var(--size-4-4);
+}
+
+.rockuml-render {
+	position: absolute;
+	visibility: hidden;
+	pointer-events: none;
+	width: 100%;
+}
+
+.markdown-preview-view.rockuml-wide.is-readable-line-width,
+.markdown-source-view.mod-cm6.rockuml-wide.is-readable-line-width {
+	--file-line-width: 100%;
+}
+
+.markdown-source-view.mod-cm6 .cm-lang-mermaid > .mermaid > .rockuml-toolbar {
+	inset-inline-end: var(--size-4-8);
+}
