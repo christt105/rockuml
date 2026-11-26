@@ -7,6 +7,10 @@ export default defineConfig([
 	},
 	...obsidianmd.configs.recommended,
 	{
+		files: ["src/**/*.test.ts"],
+		rules: { "obsidianmd/no-nodejs-modules": "off" },
+	},
+	{
 		languageOptions: {
 			parserOptions: {
 				projectService: true,

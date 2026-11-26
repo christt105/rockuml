@@ -1,7 +1,8 @@
-import { type App, MarkdownRenderChild, type MarkdownPostProcessorContext, parseLinktext, resolveSubpath } from "obsidian";
+import { type App, MarkdownRenderChild, type MarkdownPostProcessorContext } from "obsidian";
 import type { Diagram } from "./diagram";
 import { diagramToolbar } from "./diagram-toolbar";
-import { mermaidBlocks } from "./mermaid-blocks";
+import { diagramBlocks } from "./diagram-blocks";
+import { diagramNote } from "./diagram-note";
 import type { RockUmlSettings } from "./settings/rockuml-settings";
 
 const renderedSelector = ".mermaid";
@@ -76,20 +77,11 @@ export class ReadingMermaid extends MarkdownRenderChild {
 	}
 
 	private async getDiagram(element: HTMLElement): Promise<Diagram> {
-		const path = this.context.sourcePath;
-		const file = this.app.vault.getFileByPath(path);
-		const noteName = file?.basename ?? (path.split("/").pop()?.replace(/\.md$/i, "") || "diagram");
+		const { file, noteName, section, start, end } = diagramNote(this.app, this.context, element);
 		const source = this.sources.get(element);
-		const section = this.context.getSectionInfo(element);
 		const blocks = section
-			? mermaidBlocks(section.text)
-			: file ? mermaidBlocks(await this.app.vault.cachedRead(file)) : [];
-		const link = element.closest(".markdown-embed[src]")?.getAttribute("src");
-		const subpath = link ? parseLinktext(link).subpath : "";
-		const metadata = !section && subpath && file ? this.app.metadataCache.getFileCache(file) : null;
-		const target = metadata ? resolveSubpath(metadata, subpath) : null;
-		const start = section?.lineStart ?? target?.start.line ?? 0;
-		const end = section?.lineEnd ?? target?.end?.line ?? Infinity;
+			? diagramBlocks(section.text, "mermaid")
+			: file ? diagramBlocks(await this.app.vault.cachedRead(file), "mermaid") : [];
 		const candidates = blocks.filter(block => block.start >= start && block.start <= end);
 		const peers = Array.from(this.containerEl.querySelectorAll<HTMLElement>(renderedSelector)).filter(peer =>
 			peer.closest(".markdown-embed") === element.closest(".markdown-embed")
@@ -104,6 +96,6 @@ export class ReadingMermaid extends MarkdownRenderChild {
 		if (diagramSource === undefined) {
 			throw new Error("The Mermaid source could not be found in this note.");
 		}
-		return { source: diagramSource, noteName, number: block?.number ?? 1 };
+		return { language: "mermaid", source: diagramSource, noteName, number: block?.number ?? 1 };
 	}
 }

@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { mermaidBlocks } from "./mermaid-blocks";
+import { diagramBlocks } from "./diagram-blocks";
 
 it("locates Mermaid fences in the source note and leaves block IDs out of the source", () => {
 	const note = [
@@ -17,7 +17,7 @@ it("locates Mermaid fences in the source note and leaves block IDs out of the so
 		"> ~~~~",
 	].join("\r\n");
 
-	expect(mermaidBlocks(note)).toEqual([
+	expect(diagramBlocks(note, "mermaid")).toEqual([
 		{ start: 1, end: 4, number: 1, source: "flowchart LR\n  A --> B" },
 		{ start: 8, end: 11, number: 2, source: "sequenceDiagram\n  A->>B: Hello" },
 	]);
@@ -38,7 +38,14 @@ it("skips frontmatter and other fenced examples when numbering diagrams", () => 
 		"```",
 	].join("\n");
 
-	expect(mermaidBlocks(note)).toEqual([
+	expect(diagramBlocks(note, "mermaid")).toEqual([
 		{ start: 8, end: 10, number: 1, source: "flowchart LR" },
 	]);
+});
+
+
+it("numbers Mermaid and PlantUML together and skips other languages", () => {
+	const note = ["```plantuml", "Alice -> Bob", "```", "```text", "skip", "```", "```mermaid", "flowchart LR", "```"].join("\n");
+	expect(diagramBlocks(note, "plantuml")).toEqual([{ start: 0, end: 2, number: 1, source: "Alice -> Bob" }]);
+	expect(diagramBlocks(note, "mermaid")).toEqual([{ start: 6, end: 8, number: 2, source: "flowchart LR" }]);
 });

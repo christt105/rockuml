@@ -1,6 +1,6 @@
 import type { RockUmlSettings } from "./settings/rockuml-settings";
 
-export function exportBackgroundColor(settings: RockUmlSettings, noteColor: string): string | undefined {
+export function exportBackgroundColor(settings: Pick<RockUmlSettings, "exportTheme" | "exportBackground">, noteColor: string): string | undefined {
 	if (settings.exportBackground === "transparent") {
 		return undefined;
 	}

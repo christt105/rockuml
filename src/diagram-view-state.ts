@@ -9,8 +9,9 @@ export function diagramFromState(state: unknown): Diagram | undefined {
 		return;
 	}
 	const { source, noteName, number } = diagram;
-	if (typeof source === "string" && typeof noteName === "string" &&
+	const language = "language" in diagram ? diagram.language : "mermaid";
+	if ((language === "mermaid" || language === "plantuml") && typeof source === "string" && typeof noteName === "string" &&
 		typeof number === "number" && Number.isSafeInteger(number) && number >= 1) {
-		return { source, noteName, number };
+		return { language, source, noteName, number };
 	}
 }
